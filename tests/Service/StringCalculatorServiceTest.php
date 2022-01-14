@@ -21,7 +21,7 @@ class StringCalculatorServiceTest extends TestCase
         $expectedResult = 0;
         $result = $this->stringCalculatorService->add($inputString);
 
-        $this->assertEquals($result, $expectedResult);
+        $this->assertEquals($expectedResult, $result);
     }
 
     public function testReturnTypeInteger(): void
@@ -39,7 +39,58 @@ class StringCalculatorServiceTest extends TestCase
         $expectedResult = '1,2,3';
         $result = $this->stringCalculatorService->scrub($inputString);
 
-        $this->assertEquals($result, $expectedResult);
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testControlCodeFound(): void
+    {
+        $inputString = "//;\n1;3;4";
+        $result = $this->stringCalculatorService->hasControlCode($inputString);
+
+        $this->assertTrue($result);
+    }
+
+    public function testControlCodeNotFound(): void
+    {
+        $inputString = "1;3;4";
+        $result = $this->stringCalculatorService->hasControlCode($inputString);
+
+        $this->assertFalse($result);
+    }
+
+    public function testGetDelimetersFromControlCode(): void
+    {
+        $inputString = "//;\n1;3;4";
+        $expectedResult = ';';
+        $result = $this->stringCalculatorService->getDelimeter($inputString);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testGetNumbersFromDataWithControlCode(): void
+    {
+        $inputString = "//;\n1;3;4";
+        $expectedResult = '1;3;4';
+        $result = $this->stringCalculatorService->getNumbers($inputString);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testGetNumbersFromDataWithoutControlCode(): void
+    {
+        $inputString = "1,3,4";
+        $expectedResult = '1,3,4';
+        $result = $this->stringCalculatorService->getNumbers($inputString);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testNegativeNumberThrowsException(): void
+    {
+        $inputString = "1,-3,4";
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Negatives not allowed: -3');
+        $this->stringCalculatorService->add($inputString);
     }
 
     /**
@@ -49,7 +100,7 @@ class StringCalculatorServiceTest extends TestCase
     {
         $result = $this->stringCalculatorService->add($inputString);
 
-        $this->assertEquals($result, $expectedResult);
+        $this->assertEquals($expectedResult, $result);
     }
 
     public function additionProvider(): array
@@ -59,7 +110,11 @@ class StringCalculatorServiceTest extends TestCase
             ['1', 1],
             ['1,2,5', 8],
             ["1\n,2,3", 6],
-            ["1,\n2,4", 7]
+            ["1,\n2,4", 7],
+            ["//;\n1;3;4", 8],
+            ["//;\n1;\n3;4", 8],
+            ["//$\n1$2$3", 6],
+            ["//@\n2@3@8", 13],
         ];
     }
 }
