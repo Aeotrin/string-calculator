@@ -33,11 +33,17 @@ class StringCalculatorServiceTest extends TestCase
         $this->assertIsInt($result);
     }
 
+    public function testScrubNewlines(): void
+    {
+        $inputString = "1\n,\n2,3";
+        $expectedResult = '1,2,3';
+        $result = $this->stringCalculatorService->scrub($inputString);
+
+        $this->assertEquals($result, $expectedResult);
+    }
+
     /**
      * @dataProvider additionProvider
-     * @param string $inputString
-     * @param int $expectedResult
-     * @return void
      */
     public function testInputCases($inputString, $expectedResult): void
     {
@@ -51,7 +57,9 @@ class StringCalculatorServiceTest extends TestCase
         return [
             ['', 0],
             ['1', 1],
-            ['1,2,5', 8]
+            ['1,2,5', 8],
+            ["1\n,2,3", 6],
+            ["1,\n2,4", 7]
         ];
     }
 }
