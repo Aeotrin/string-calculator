@@ -27,7 +27,6 @@ class StringCalculatorServiceTest extends TestCase
     public function testReturnTypeInteger(): void
     {
         $inputString = '1,1';
-        $expectedResult = 0;
         $result = $this->stringCalculatorService->add($inputString);
 
         $this->assertIsInt($result);
@@ -62,6 +61,15 @@ class StringCalculatorServiceTest extends TestCase
     {
         $inputString = "//;\n1;3;4";
         $expectedResult = ';';
+        $result = $this->stringCalculatorService->getDelimeter($inputString);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testGetDelimetersWithNoControlCode(): void
+    {
+        $inputString = "1,3,4";
+        $expectedResult = ',';
         $result = $this->stringCalculatorService->getDelimeter($inputString);
 
         $this->assertEquals($expectedResult, $result);
@@ -107,6 +115,7 @@ class StringCalculatorServiceTest extends TestCase
     {
         return [
             ['', 0],
+            ["//*\n", 0],
             ['1', 1],
             ['1,2,5', 8],
             ["1\n,2,3", 6],
@@ -115,6 +124,13 @@ class StringCalculatorServiceTest extends TestCase
             ["//;\n1;\n3;4", 8],
             ["//$\n1$2$3", 6],
             ["//@\n2@3@8", 13],
+            ["2,1001", 2],
+            ["2,1001,3,4", 9],
+            ["//@\n2@1001", 2],
+            ["//***\n1***2***3", 6],
+            ["//$,@\n1$2@3", 6],
+            ["//$,@\n1@2$3@4", 10],
+            ["//$$,@,*****\n1$$2@2$$4*****1", 10],
         ];
     }
 }

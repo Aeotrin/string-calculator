@@ -1,0 +1,24 @@
+{# templates/forms/stringCalculator.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <div class="mb-2">
+        {{ form(form) }}
+    </div>
+    {% if (input is defined) and (delimeters is defined) and (result is defined) %}
+        <div class="mb-2">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Result</h3>
+                    <p class="card-text"><strong>Input:</strong> {{ input }}</p>
+                    <p class="card-text"><strong>Delimeter(s):</strong> {{ delimeters }}</p>
+                    <p class="card-text"><strong>Result:</strong> {{ result }}</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+
+

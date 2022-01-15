@@ -4,6 +4,7 @@ namespace App\Service;
 
 class StringCalculatorService
 {
+    protected const DEFAULT_DELIMETER = ',';
     protected const CONTROL_CODE = '//';
 
     /**
@@ -18,20 +19,30 @@ class StringCalculatorService
         if (true === empty($numbers)) {
             return 0;
         }
-        
+
         $delimeter = $this->getDelimeter($numbers);
         $numbers = $this->getNumbers($numbers);
-        $numbers = $this->scrub($numbers);
 
-        $numbers = explode($delimeter, $numbers);
+        if (self::DEFAULT_DELIMETER === $delimeter) {
+            $delimeterPattern = '/[' . self::DEFAULT_DELIMETER . ']/';
+        } else {
+            $delimeters = preg_split( "/,/", $delimeter );
+            $delimeterPattern = '/[' . implode('|', $delimeters) . ']/';
+        }
+
+        $numbers = preg_split( $delimeterPattern, $numbers, -1, PREG_SPLIT_NO_EMPTY);
+
         $sum = 0;
 
         foreach ($numbers as $number) {
             if ($number < 0) {
                 throw new \Exception('Negatives not allowed: ' . $number);
             }
-            
-            $sum += $number;
+            if ($number > 1000) {
+                continue;
+            }
+
+            $sum += intval($number);
         }
 
         return $sum;
@@ -57,7 +68,7 @@ class StringCalculatorService
      */
     public function hasControlCode(String $numbers): bool
     {
-        $controlCodePosition = strpos($numbers, $this::CONTROL_CODE);
+        $controlCodePosition = strpos($numbers, self::CONTROL_CODE);
 
         if (false === $controlCodePosition) {
             return false;
@@ -75,10 +86,10 @@ class StringCalculatorService
     public function getDelimeter(String $numbers): String
     {
         if (false === $this->hasControlCode($numbers)) {
-            return ',';
+            return self::DEFAULT_DELIMETER;
         }
 
-        $input = preg_split('/\R/m', $numbers, 2, PREG_SPLIT_NO_EMPTY);
+        $input = preg_split('/\R/', $numbers, 2, PREG_SPLIT_NO_EMPTY);
         $controlCodeStart = strpos($numbers, self::CONTROL_CODE);
         $delimeter = substr($input[0], strlen($controlCodeStart) + 1);
 
@@ -97,9 +108,14 @@ class StringCalculatorService
             return $numbers;
         }
         
-        $input = preg_split('/\R/m', $numbers, 2, PREG_SPLIT_NO_EMPTY);
+        $input = preg_split('/\R/', $numbers, 2, PREG_SPLIT_NO_EMPTY);
+        if (array_key_exists(1, $input)) {
+            $numbers = $this->scrub($input[1]);
+        } else {
+            $numbers = '';
+        }
 
-        return $input[1];
+        return $numbers;
     }
 
 }
